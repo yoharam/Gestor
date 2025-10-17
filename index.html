@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Contraseñas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Ubuntu', 'Segoe UI', Roboto, Oxygen, sans-serif;
+            background: linear-gradient(135deg, #a8e6cf 0%, #dcedc1 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .auth-container, .app-container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        h1 {
+            color: #2d3436;
+            margin-bottom: 10px;
+            font-size: 2em;
+            font-weight: 700;
+        }
+
+        h2 {
+            color: #2d3436;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            color: #636e72;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2d3436;
+            font-weight: 500;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #dfe6e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #74b9ff;
+            box-shadow: 0 0 0 3px rgba(116, 185, 255, 0.2);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(116, 185, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: #dfe6e9;
+            color: #2d3436;
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #b2bec3;
+        }
+
+        .btn-small {
+            width: auto;
+            padding: 8px 16px;
+            font-size: 14px;
+            display: inline-block;
+        }
+
+        .btn-danger {
+            background: #ff7675;
+            color: white;
+        }
+
+        .btn-success {
+            background: #55efc4;
+            color: #2d3436;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .user-info {
+            color: #636e72;
+            font-size: 14px;
+        }
+
+        .passwords-grid {
+            display: grid;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .password-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #dfe6e9;
+            transition: all 0.3s;
+        }
+
+        .password-card:hover {
+            border-color: #74b9ff;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transform: translateY(-3px);
+        }
+
+        .password-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .password-site {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2d3436;
+            word-break: break-word;
+        }
+
+        .password-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .password-info {
+            margin-bottom: 10px;
+        }
+
+        .password-label {
+            font-size: 12px;
+            color: #636e72;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .password-value {
+            color: #2d3436;
+            font-size: 14px;
+            word-break: break-all;
+        }
+
+        .password-display {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .password-hidden {
+            font-family: monospace;
+            letter-spacing: 2px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 5px;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+            border-radius: 5px;
+        }
+
+        .icon-btn:hover {
+            opacity: 1;
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #636e72;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .close-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #636e72;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 600px) {
+            .auth-container, .app-container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .password-actions {
+                flex-direction: column;
+            }
+
+            .btn-small {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Pantalla de autenticación -->
+    <div id="authContainer" class="container auth-container">
+        <h1>🔐 Gestor de Contraseñas</h1>
+        <p class="subtitle">Administra tus contraseñas de forma segura</p>
+
+        <div id="authAlert"></div>
+
+        <div id="loginForm">
+            <h2>Iniciar Sesión</h2>
+            <div class="form-group">
+                <label>Usuario</label>
+                <input type="text" id="loginUsername" placeholder="Ingresa tu usuario">
+            </div>
+            <div class="form-group">
+                <label>Contraseña Maestra</label>
+                <input type="password" id="loginPassword" placeholder="Ingresa tu contraseña maestra">
+            </div>
+            <button class="btn btn-primary" onclick="login()">Iniciar Sesión</button>
+            <button class="btn btn-secondary" onclick="showRegister()">¿No tienes cuenta? Regístrate</button>
+        </div>
+
+        <div id="registerForm" class="hidden">
+            <h2>Crear Cuenta</h2>
+            <div class="form-group">
+                <label>Usuario</label>
+                <input type="text" id="registerUsername" placeholder="Elige un nombre de usuario">
+            </div>
+            <div class="form-group">
+                <label>Contraseña Maestra</label>
+                <input type="password" id="registerPassword" placeholder="Crea una contraseña maestra segura">
+            </div>
+            <div class="form-group">
+                <label>Confirmar Contraseña</label>
+                <input type="password" id="registerPasswordConfirm" placeholder="Confirma tu contraseña">
+            </div>
+            <button class="btn btn-primary" onclick="register()">Crear Cuenta</button>
+            <button class="btn btn-secondary" onclick="showLogin()">¿Ya tienes cuenta? Inicia sesión</button>
+        </div>
+    </div>
+
+    <!-- Pantalla principal -->
+    <div id="appContainer" class="container app-container hidden">
+        <div class="header">
+            <div>
+                <h1>🔐 Mis Contraseñas</h1>
+                <div class="user-info">Usuario: <strong id="currentUser"></strong></div>
+            </div>
+            <div>
+                <button class="btn btn-primary btn-small" onclick="showAddModal()">+ Nueva Contraseña</button>
+                <button class="btn btn-secondary btn-small" onclick="logout()">Cerrar Sesión</button>
+            </div>
+        </div>
+
+        <div id="appAlert"></div>
+
+        <div id="passwordsList" class="passwords-grid"></div>
+    </div>
+
+    <!-- Modal para agregar/editar contraseña -->
+    <div id="passwordModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Nueva Contraseña</h2>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            <div class="form-group">
+                <label>Sitio/Aplicación</label>
+                <input type="text" id="modalSite" placeholder="ej. Gmail, Facebook, Netflix">
+            </div>
+            <div class="form-group">
+                <label>Usuario/Email</label>
+                <input type="text" id="modalUsername" placeholder="tu@email.com">
+            </div>
+            <div class="form-group">
+                <label>Contraseña</label>
+                <input type="text" id="modalPassword" placeholder="Ingresa la contraseña">
+            </div>
+            <div class="form-group">
+                <label>Notas (opcional)</label>
+                <textarea id="modalNotes" placeholder="Información adicional..."></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="savePassword()">Guardar</button>
+        </div>
+    </div>
+
+    <script>
+        // Configuración
+        const API_URL = 'http://localhost:8000/api';
+        let token = localStorage.getItem('token');
+        let currentUsername = localStorage.getItem('username');
+        let editingPasswordId = null;
+
+        // Inicializar
+        if (token) {
+            showApp();
+            loadPasswords();
+        }
+
+        // Autenticación
+        async function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!username || !password) {
+                showAlert('authAlert', 'Por favor completa todos los campos', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, master_password: password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    token = data.token;
+                    currentUsername = data.username;
+                    localStorage.setItem('token', token);
+                    localStorage.setItem('username', currentUsername);
+                    showApp();
+                    loadPasswords();
+                } else {
+                    showAlert('authAlert', data.detail || 'Error al iniciar sesión', 'error');
+                }
+            } catch (error) {
+                showAlert('authAlert', 'Error de conexión con el servidor', 'error');
+            }
+        }
+
+        async function register() {
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerPasswordConfirm').value;
+
+            if (!username || !password || !confirmPassword) {
+                showAlert('authAlert', 'Por favor completa todos los campos', 'error');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showAlert('authAlert', 'Las contraseñas no coinciden', 'error');
+                return;
+            }
+
+            if (password.length < 8) {
+                showAlert('authAlert', 'La contraseña debe tener al menos 8 caracteres', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, master_password: password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    token = data.token;
+                    currentUsername = data.username;
+                    localStorage.setItem('token', token);
+                    localStorage.setItem('username', currentUsername);
+                    showApp();
+                    loadPasswords();
+                } else {
+                    showAlert('authAlert', data.detail || 'Error al crear la cuenta', 'error');
+                }
+            } catch (error) {
+                showAlert('authAlert', 'Error de conexión con el servidor', 'error');
+            }
+        }
+
+        function logout() {
+            token = null;
+            currentUsername = null;
+            localStorage.removeItem('token');
+            localStorage.removeItem('username');
+            document.getElementById('appContainer').classList.add('hidden');
+            document.getElementById('authContainer').classList.remove('hidden');
+            showLogin();
+        }
+
+        // Gestión de contraseñas
+        async function loadPasswords() {
+            try {
+                const response = await fetch(`${API_URL}/passwords`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    displayPasswords(data.passwords);
+                } else if (response.status === 401) {
+                    logout();
+                } else {
+                    showAlert('appAlert', 'Error al cargar las contraseñas', 'error');
+                }
+            } catch (error) {
+                showAlert('appAlert', 'Error de conexión con el servidor', 'error');
+            }
+        }
+
+        function displayPasswords(passwords) {
+            const container = document.getElementById('passwordsList');
+            
+            if (passwords.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔒</div>
+                        <h3>No tienes contraseñas guardadas</h3>
+                        <p>Haz clic en "Nueva Contraseña" para agregar tu primera contraseña</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = passwords.map(p => `
+                <div class="password-card">
+                    <div class="password-header">
+                        <div class="password-site">${escapeHtml(p.site)}</div>
+                        <div class="password-actions">
+                            <button class="btn btn-success btn-small" onclick="editPassword(${p.id})">Editar</button>
+                            <button class="btn btn-danger btn-small" onclick="deletePassword(${p.id})">Eliminar</button>
+                        </div>
+                    </div>
+                    <div class="password-info">
+                        <div class="password-label">Usuario</div>
+                        <div class="password-value">${escapeHtml(p.username)}</div>
+                    </div>
+                    <div class="password-info">
+                        <div class="password-label">Contraseña</div>
+                        <div class="password-display">
+                            <span class="password-value password-hidden" id="pass-${p.id}">••••••••</span>
+                            <button class="icon-btn" onclick="togglePassword(${p.id}, '${escapeHtml(p.password)}')">👁️</button>
+                            <button class="icon-btn" onclick="copyPassword('${escapeHtml(p.password)}')">📋</button>
+                        </div>
+                    </div>
+                    ${p.notes ? `
+                        <div class="password-info">
+                            <div class="password-label">Notas</div>
+                            <div class="password-value">${escapeHtml(p.notes)}</div>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function togglePassword(id, password) {
+            const element = document.getElementById(`pass-${id}`);
+            if (element.textContent === '••••••••') {
+                element.textContent = password;
+                element.classList.remove('password-hidden');
+            } else {
+                element.textContent = '••••••••';
+                element.classList.add('password-hidden');
+            }
+        }
+
+        function copyPassword(password) {
+            navigator.clipboard.writeText(password).then(() => {
+                showAlert('appAlert', 'Contraseña copiada al portapapeles', 'success');
+                setTimeout(() => document.getElementById('appAlert').innerHTML = '', 2000);
+            });
+        }
+
+        function showAddModal() {
+            editingPasswordId = null;
+            document.getElementById('modalTitle').textContent = 'Nueva Contraseña';
+            document.getElementById('modalSite').value = '';
+            document.getElementById('modalUsername').value = '';
+            document.getElementById('modalPassword').value = '';
+            document.getElementById('modalNotes').value = '';
+            document.getElementById('passwordModal').classList.remove('hidden');
+        }
+
+        function editPassword(id) {
+            editingPasswordId = id;
+            
+            // En una implementación real, obtendríamos los datos de la contraseña del servidor
+            // Por ahora, simulamos la carga de datos
+            document.getElementById('modalTitle').textContent = 'Editar Contraseña';
+            document.getElementById('modalSite').value = 'Sitio de ejemplo';
+            document.getElementById('modalUsername').value = 'usuario@ejemplo.com';
+            document.getElementById('modalPassword').value = 'contraseña123';
+            document.getElementById('modalNotes').value = 'Notas de ejemplo';
+            
+            document.getElementById('passwordModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('passwordModal').classList.add('hidden');
+        }
+
+        async function savePassword() {
+            const site = document.getElementById('modalSite').value;
+            const username = document.getElementById('modalUsername').value;
+            const password = document.getElementById('modalPassword').value;
+            const notes = document.getElementById('modalNotes').value;
+
+            if (!site || !username || !password) {
+                showAlert('appAlert', 'Por favor completa todos los campos obligatorios', 'error');
+                return;
+            }
+
+            try {
+                const url = editingPasswordId ? 
+                    `${API_URL}/passwords/${editingPasswordId}` : 
+                    `${API_URL}/passwords`;
+                
+                const method = editingPasswordId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        site,
+                        username,
+                        password,
+                        notes
+                    })
+                });
+
+                if (response.ok) {
+                    closeModal();
+                    loadPasswords();
+                    showAlert('appAlert', 
+                        editingPasswordId ? 'Contraseña actualizada' : 'Contraseña guardada', 
+                        'success');
+                } else {
+                    showAlert('appAlert', 'Error al guardar la contraseña', 'error');
+                }
+            } catch (error) {
+                showAlert('appAlert', 'Error de conexión con el servidor', 'error');
+            }
+        }
+
+        async function deletePassword(id) {
+            if (!confirm('¿Estás seguro de que quieres eliminar esta contraseña?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/passwords/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    loadPasswords();
+                    showAlert('appAlert', 'Contraseña eliminada', 'success');
+                } else {
+                    showAlert('appAlert', 'Error al eliminar la contraseña', 'error');
+                }
+            } catch (error) {
+                showAlert('appAlert', 'Error de conexión con el servidor', 'error');
+            }
+        }
+
+        // Utilidades
+        function showLogin() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('registerForm').classList.add('hidden');
+            document.getElementById('authAlert').innerHTML = '';
+        }
+
+        function showRegister() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+            document.getElementById('authAlert').innerHTML = '';
+        }
+
+        function showApp() {
+            document.getElementById('authContainer').classList.add('hidden');
+            document.getElementById('appContainer').classList.remove('hidden');
+            document.getElementById('currentUser').textContent = currentUsername;
+        }
+
+        function showAlert(containerId, message, type) {
+            const container = document.getElementById(containerId);
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-error';
+            container.innerHTML = `<div class="alert ${alertClass}">${message}</div>`;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
