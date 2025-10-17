@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from typing import Optional, List
 import sqlite3
@@ -38,11 +39,12 @@ SALT = os.getenv("SALT", "fixed_salt_for_demo")  # En producción usar salt úni
 # CORS para permitir acceso desde frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5500", "http://127.0.0.1:5500"],  # Especificar dominios exactos
+    allow_origins=["http://localhost:5500", "http://127.0.0.1:5500", "http://localhost:8000", "http://127.0.0.1:8000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # Modelos Pydantic con validación
 class UserRegister(BaseModel):
@@ -189,7 +191,19 @@ def verify_jwt_token(credentials: HTTPAuthorizationCredentials = Depends(securit
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-# Endpoints mejorados
+# Endpoint para servir el frontend
+@app.get("/")
+async def serve_frontend():
+    """Sirve el archivo index.html en la ruta raíz"""
+    try:
+        return FileResponse('index.html')
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=404,
+            detail="Frontend no encontrado. Asegúrate de que index.html esté en el directorio raíz."
+        )
+
+# Endpoints de la API
 @app.post("/api/register", status_code=status.HTTP_201_CREATED)
 async def register(user: UserRegister):
     """Registro de nuevo usuario"""
